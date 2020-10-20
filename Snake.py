@@ -109,7 +109,7 @@ def draw_grid(w, rows, surface):
 
     x = 0
     y = 0
-    for l in range(rows):
+    for _ in range(rows):
         x = x + size_btwn
         y = y + size_btwn
 
