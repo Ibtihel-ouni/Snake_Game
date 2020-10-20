@@ -141,10 +141,7 @@ def message_box(subject, content):
     root.attributes("-topmost", True)
     root.withdraw()
     messagebox.showinfo(subject, content)
-    try:
-        root.destroy()
-    except:
-        pass
+    root.destroy()
 
 
 def main():
