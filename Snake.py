@@ -5,7 +5,7 @@ from tkinter import messagebox
 import pygame
 
 
-class cube(object):
+class cube:
     rows = 20
     w = 500
 
@@ -35,7 +35,7 @@ class cube(object):
             pygame.draw.circle(surface, (0, 0, 0), circleMiddle2, radius)
 
 
-class snake(object):
+class snake:
     body = []
     turns = {}
 
