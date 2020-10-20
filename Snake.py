@@ -48,10 +48,9 @@ class Snake:
 
     def move(self):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-
             keys = pygame.key.get_pressed()
+            if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
+                return False
 
             directions = {
                 pygame.K_LEFT: (-1, 0),
@@ -82,6 +81,7 @@ class Snake:
                     c.pos = (c.pos[0], c.rows - 1)
                 else:
                     c.move(c.dirnx, c.dirny)
+        return True
 
     def reset(self, pos):
         self.head = Cube(pos)
@@ -154,14 +154,14 @@ def main():
     win = pygame.display.set_mode((width, width))
     s = Snake(pygame.color.THECOLORS['red'], (10, 10))
     snack = Cube(random_snack(rows, s), color=pygame.color.THECOLORS['green'])
-    flag = True
+    game_running = True
 
     clock = pygame.time.Clock()
 
-    while flag:
+    while game_running:
         pygame.time.delay(50)
         clock.tick(10)
-        s.move()
+        game_running = s.move()
         if s.body[0].pos == snack.pos:
             s.add_cube()
             snack = Cube(random_snack(rows, s), color=pygame.color.THECOLORS['green'])
@@ -170,10 +170,11 @@ def main():
             if s.body[x].pos in list(map(lambda z: z.pos, s.body[x + 1:])):
                 print('Score: ', len(s.body))
                 message_box('You Lost!', 'Play again...')
-                s.reset((10, 10))
+                s.reset((rows // 2, rows // 2))
                 break
 
         redraw_window(win)
+    pygame.quit()
 
 
 if __name__ == '__main__':
