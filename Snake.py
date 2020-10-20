@@ -110,10 +110,7 @@ class Snake:
 
     def draw(self, surface):
         for i, c in enumerate(self.body):
-            if i == 0:
-                c.draw(surface, True)
-            else:
-                c.draw(surface)
+            c.draw(surface, eyes=i == 0)
 
 
 def draw_grid(w, rows, surface):
