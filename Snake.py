@@ -31,8 +31,8 @@ class Cube:
             radius = 3
             circle_middle = (i * dis + centre - radius, j * dis + 8)
             circle_middle2 = (i * dis + dis - radius * 2, j * dis + 8)
-            pygame.draw.circle(surface, (0, 0, 0), circle_middle, radius)
-            pygame.draw.circle(surface, (0, 0, 0), circle_middle2, radius)
+            pygame.draw.circle(surface, pygame.color.THECOLORS['black'], circle_middle, radius)
+            pygame.draw.circle(surface, pygame.color.THECOLORS['black'], circle_middle2, radius)
 
 
 class Snake:
