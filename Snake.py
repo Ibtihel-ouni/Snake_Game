@@ -104,17 +104,16 @@ class Snake:
             c.draw(surface, eyes=i == 0)
 
 
-def draw_grid(w, rows, surface):
-    size_btwn = w // rows
-
+def draw_grid(width, rows, surface):
+    square_size = width // rows
+    line_color = pygame.color.THECOLORS['white']
     x = 0
     y = 0
     for _ in range(rows):
-        x = x + size_btwn
-        y = y + size_btwn
-
-        pygame.draw.line(surface, pygame.color.THECOLORS['white'], (x, 0), (x, w))
-        pygame.draw.line(surface, pygame.color.THECOLORS['white'], (0, y), (w, y))
+        x += square_size
+        y += square_size
+        pygame.draw.line(surface, line_color, (x, 0), (x, width))
+        pygame.draw.line(surface, line_color, (0, y), (width, y))
 
 
 def redraw_window(surface):
