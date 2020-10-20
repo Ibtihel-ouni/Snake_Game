@@ -157,8 +157,7 @@ def random_snack(rows, item):
             continue
         else:
             break
-
-    return (x, y)
+    return x, y
 
 
 def message_box(subject, content):
