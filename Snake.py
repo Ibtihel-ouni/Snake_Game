@@ -98,6 +98,8 @@ class SnakeGame:
     def __init__(self, window_size, grid_lines):
         self.window_size = window_size
         self.grid_lines = grid_lines
+        Cube.w = window_size
+        Cube.rows = grid_lines
         self.square_size = window_size // grid_lines
         self.surface = pygame.display.set_mode((self.window_size, self.window_size))
         self.snake = Snake(Position(grid_lines // 2, grid_lines // 2))
