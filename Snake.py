@@ -93,6 +93,10 @@ class Snake:
         for i, c in enumerate(self.body):
             c.draw(surface, eyes=i == 0)
 
+    def has_collision(self):
+        positions = [c.pos for c in self.body]
+        return len(set(positions)) != len(positions)
+
 
 class SnakeGame:
     def __init__(self, window_size, grid_lines):
@@ -152,13 +156,11 @@ class SnakeGame:
                 self.snake.add_cube()
                 self.random_snack()
 
-            for x in range(len(self.snake.body)):
-                if self.snake.body[x].pos in list(map(lambda z: z.pos, self.snake.body[x + 1:])):
-                    print('Score: ', len(self.snake.body))
-                    self.message_box('You Lost!', 'Play again...')
-                    self.snake.reset((self.grid_lines // 2, self.grid_lines // 2))
-                    break
-
+            if self.snake.has_collision():
+                print('Score: ', len(self.snake.body))
+                self.message_box('You Lost!', 'Play again...')
+                self.snake.reset((self.grid_lines // 2, self.grid_lines // 2))
+                break
             self.redraw_window()
         pygame.quit()
 
