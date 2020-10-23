@@ -114,7 +114,7 @@ class SnakeGame:
             pygame.draw.line(self.surface, line_color, (0, y), (self.window_size, y))
 
     def redraw_window(self):
-        self.surface.fill((0, 0, 0))
+        self.surface.fill(pygame.color.THECOLORS['black'])
         self.snake.draw(self.surface)
         self.snack.draw(self.surface)
         self.draw_grid()
@@ -162,5 +162,5 @@ class SnakeGame:
 
 
 if __name__ == '__main__':
-    game = SnakeGame(window_size=500, grid_lines=20)
+    game = SnakeGame(window_size=500, grid_lines=10)
     game.run()
