@@ -43,8 +43,7 @@ class Snake:
     body = []
     turns = {}
 
-    def __init__(self, color, pos):
-        self.color = color
+    def __init__(self, pos):
         self.head = Cube(pos)
         self.body.append(self.head)
         self.direction = Direction(0, 1)
@@ -95,75 +94,73 @@ class Snake:
             c.draw(surface, eyes=i == 0)
 
 
-def draw_grid(width, rows, surface):
-    square_size = width // rows
-    line_color = pygame.color.THECOLORS['white']
-    x = 0
-    y = 0
-    for _ in range(rows):
-        x += square_size
-        y += square_size
-        pygame.draw.line(surface, line_color, (x, 0), (x, width))
-        pygame.draw.line(surface, line_color, (0, y), (width, y))
+class SnakeGame:
+    def __init__(self, window_size, grid_lines):
+        self.window_size = window_size
+        self.grid_lines = grid_lines
+        self.square_size = window_size // grid_lines
+        self.surface = pygame.display.set_mode((self.window_size, self.window_size))
+        self.snake = Snake(Position(grid_lines // 2, grid_lines // 2))
+        self.snack = Cube((0, 0))
 
+    def draw_grid(self):
+        line_color = pygame.color.THECOLORS['white']
+        x = 0
+        y = 0
+        for _ in range(self.grid_lines):
+            x += self.square_size
+            y += self.square_size
+            pygame.draw.line(self.surface, line_color, (x, 0), (x, self.window_size))
+            pygame.draw.line(self.surface, line_color, (0, y), (self.window_size, y))
 
-def redraw_window(surface):
-    global rows, width, s, snack
-    surface.fill((0, 0, 0))
-    s.draw(surface)
-    snack.draw(surface)
-    draw_grid(width, rows, surface)
-    pygame.display.update()
+    def redraw_window(self):
+        self.surface.fill((0, 0, 0))
+        self.snake.draw(self.surface)
+        self.snack.draw(self.surface)
+        self.draw_grid()
+        pygame.display.update()
 
+    def random_snack(self):
+        x = random.randrange(self.grid_lines)
+        y = random.randrange(self.grid_lines)
+        while (x, y) in [z.pos for z in self.snake.body]:
+            x = random.randrange(self.grid_lines)
+            y = random.randrange(self.grid_lines)
+        self.snack = Cube((x, y), color=pygame.color.THECOLORS['green'])
 
-def random_snack(rows, item):
-    positions = item.body
-    x = random.randrange(rows)
-    y = random.randrange(rows)
+    @staticmethod
+    def message_box(subject, content):
+        root = tk.Tk()
+        root.attributes("-topmost", True)
+        root.withdraw()
+        messagebox.showinfo(subject, content)
+        root.destroy()
 
-    while (x, y) in [z.pos for z in positions]:
-        x = random.randrange(rows)
-        y = random.randrange(rows)
-    return Cube((x, y), color=pygame.color.THECOLORS['green'])
+    def run(self):
+        self.random_snack()
+        game_running = True
 
+        clock = pygame.time.Clock()
 
-def message_box(subject, content):
-    root = tk.Tk()
-    root.attributes("-topmost", True)
-    root.withdraw()
-    messagebox.showinfo(subject, content)
-    root.destroy()
+        while game_running:
+            pygame.time.delay(50)
+            clock.tick(10)
+            game_running = self.snake.move()
+            if self.snake.body[0].pos == self.snack.pos:
+                self.snake.add_cube()
+                self.random_snack()
 
+            for x in range(len(self.snake.body)):
+                if self.snake.body[x].pos in list(map(lambda z: z.pos, self.snake.body[x + 1:])):
+                    print('Score: ', len(s.body))
+                    self.message_box('You Lost!', 'Play again...')
+                    self.snake.reset((self.grid_lines // 2, self.grid_lines // 2))
+                    break
 
-def main():
-    global width, rows, s, snack
-    width = 500
-    rows = 20
-    win = pygame.display.set_mode((width, width))
-    s = Snake(pygame.color.THECOLORS['red'], (10, 10))
-    snack = random_snack(rows, s)
-    game_running = True
-
-    clock = pygame.time.Clock()
-
-    while game_running:
-        pygame.time.delay(50)
-        clock.tick(10)
-        game_running = s.move()
-        if s.body[0].pos == snack.pos:
-            s.add_cube()
-            snack = random_snack(rows, s)
-
-        for x in range(len(s.body)):
-            if s.body[x].pos in list(map(lambda z: z.pos, s.body[x + 1:])):
-                print('Score: ', len(s.body))
-                message_box('You Lost!', 'Play again...')
-                s.reset((rows // 2, rows // 2))
-                break
-
-        redraw_window(win)
-    pygame.quit()
+            self.redraw_window()
+        pygame.quit()
 
 
 if __name__ == '__main__':
-    main()
+    game = SnakeGame(window_size=500, grid_lines=20)
+    game.run()
