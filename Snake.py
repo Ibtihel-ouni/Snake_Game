@@ -124,7 +124,7 @@ def random_snack(rows, item):
     while (x, y) in [z.pos for z in positions]:
         x = random.randrange(rows)
         y = random.randrange(rows)
-    return x, y
+    return Cube((x, y), color=pygame.color.THECOLORS['green'])
 
 
 def message_box(subject, content):
@@ -141,7 +141,7 @@ def main():
     rows = 20
     win = pygame.display.set_mode((width, width))
     s = Snake(pygame.color.THECOLORS['red'], (10, 10))
-    snack = Cube(random_snack(rows, s), color=pygame.color.THECOLORS['green'])
+    snack = random_snack(rows, s)
     game_running = True
 
     clock = pygame.time.Clock()
@@ -152,7 +152,7 @@ def main():
         game_running = s.move()
         if s.body[0].pos == snack.pos:
             s.add_cube()
-            snack = Cube(random_snack(rows, s), color=pygame.color.THECOLORS['green'])
+            snack = random_snack(rows, s)
 
         for x in range(len(s.body)):
             if s.body[x].pos in list(map(lambda z: z.pos, s.body[x + 1:])):
