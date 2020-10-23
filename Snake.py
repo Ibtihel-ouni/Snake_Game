@@ -1,36 +1,37 @@
+import collections
 import random
 import tkinter as tk
 from tkinter import messagebox
 
 import pygame
 
+Direction = collections.namedtuple('Directions', ['x', 'y'])
+Position = collections.namedtuple('Position', ['x', 'y'])
+
 
 class Cube:
     rows = 20
     w = 500
 
-    def __init__(self, start, dirnx=1, dirny=0, color=pygame.color.THECOLORS['red']):
-        self.pos = start
-        self.dirnx = dirnx
-        self.dirny = dirny
+    def __init__(self, start, color=pygame.color.THECOLORS['red']):
+        self.pos = Position(*start)
+        self.direction = Direction(0, 0)
         self.color = color
 
-    def move(self, dirnx, dirny):
-        self.dirnx = dirnx
-        self.dirny = dirny
-        self.pos = (self.pos[0] + self.dirnx, self.pos[1] + self.dirny)
+    def move(self, direction):
+        self.direction = direction
+        self.pos = Position(self.pos[0] + direction.x, self.pos[1] + direction.y)
 
     def draw(self, surface, eyes=False):
         dis = self.w // self.rows
-        i = self.pos[0]
-        j = self.pos[1]
+        x, y = self.pos
 
-        pygame.draw.rect(surface, self.color, (i * dis + 1, j * dis + 1, dis - 2, dis - 2))
+        pygame.draw.rect(surface, self.color, (x * dis + 1, y * dis + 1, dis - 2, dis - 2))
         if eyes:
             centre = dis // 2
             radius = 3
-            circle_middle = (i * dis + centre - radius, j * dis + 8)
-            circle_middle2 = (i * dis + dis - radius * 2, j * dis + 8)
+            circle_middle = (x * dis + centre - radius, y * dis + 8)
+            circle_middle2 = (x * dis + dis - radius * 2, y * dis + 8)
             pygame.draw.circle(surface, pygame.color.THECOLORS['black'], circle_middle, radius)
             pygame.draw.circle(surface, pygame.color.THECOLORS['black'], circle_middle2, radius)
 
@@ -43,8 +44,7 @@ class Snake:
         self.color = color
         self.head = Cube(pos)
         self.body.append(self.head)
-        self.dirnx = 0
-        self.dirny = 1
+        self.direction = Direction(0, 1)
 
     def move(self):
         for event in pygame.event.get():
@@ -53,34 +53,33 @@ class Snake:
                 return False
 
             directions = {
-                pygame.K_LEFT: (-1, 0),
-                pygame.K_RIGHT: (1, 0),
-                pygame.K_UP: (0, -1),
-                pygame.K_DOWN: (0, 1),
+                pygame.K_LEFT: Direction(-1, 0),
+                pygame.K_RIGHT: Direction(1, 0),
+                pygame.K_UP: Direction(0, -1),
+                pygame.K_DOWN: Direction(0, 1),
             }
             for key in directions.keys():
                 if keys[key]:
-                    self.dirnx, self.dirny = directions[key]
-                    self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
+                    self.turns[self.head.pos[:]] = directions[key]
 
         for i, c in enumerate(self.body):
             p = c.pos[:]
             if p in self.turns:
                 turn = self.turns[p]
-                c.move(turn[0], turn[1])
+                c.move(Direction(turn[0], turn[1]))
                 if i == len(self.body) - 1:
                     self.turns.pop(p)
             else:
-                if c.dirnx == -1 and c.pos[0] <= 0:
-                    c.pos = (c.rows - 1, c.pos[1])
-                elif c.dirnx == 1 and c.pos[0] >= c.rows - 1:
-                    c.pos = (0, c.pos[1])
-                elif c.dirny == 1 and c.pos[1] >= c.rows - 1:
-                    c.pos = (c.pos[0], 0)
-                elif c.dirny == -1 and c.pos[1] <= 0:
-                    c.pos = (c.pos[0], c.rows - 1)
+                if c.direction.x == -1 and c.pos.x <= 0:
+                    c.pos = Position(c.rows - 1, c.pos.y)
+                elif c.direction.x == 1 and c.pos.x >= c.rows - 1:
+                    c.pos = Position(0, c.pos[1])
+                elif c.direction.y == 1 and c.pos.y >= c.rows - 1:
+                    c.pos = Position(c.pos[0], 0)
+                elif c.direction.y == -1 and c.pos.y <= 0:
+                    c.pos = Position(c.pos.x, c.rows - 1)
                 else:
-                    c.move(c.dirnx, c.dirny)
+                    c.move(c.direction)
         return True
 
     def reset(self, pos):
@@ -88,16 +87,14 @@ class Snake:
         self.body = []
         self.body.append(self.head)
         self.turns = {}
-        self.dirnx = 0
-        self.dirny = 1
+        self.direction = Direction(0, 1)
 
     def add_cube(self):
         tail = self.body[-1]
-        dx, dy = tail.dirnx, tail.dirny
+        dx, dy = tail.direction
 
         self.body.append(Cube((tail.pos[0] - dx, tail.pos[1] - dy)))
-        self.body[-1].dirnx = dx
-        self.body[-1].dirny = dy
+        self.body[-1].direction = Direction(dx, dy)
 
     def draw(self, surface):
         for i, c in enumerate(self.body):
