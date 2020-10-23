@@ -154,7 +154,7 @@ class SnakeGame:
 
             for x in range(len(self.snake.body)):
                 if self.snake.body[x].pos in list(map(lambda z: z.pos, self.snake.body[x + 1:])):
-                    print('Score: ', len(s.body))
+                    print('Score: ', len(self.snake.body))
                     self.message_box('You Lost!', 'Play again...')
                     self.snake.reset((self.grid_lines // 2, self.grid_lines // 2))
                     break
