@@ -20,7 +20,10 @@ class Cube:
 
     def move(self, direction):
         self.direction = direction
-        self.pos = Position(self.pos[0] + direction.x, self.pos[1] + direction.y)
+        new_x = (self.pos.x + direction.x) % self.rows
+        new_y = (self.pos.y + direction.y) % self.rows
+
+        self.pos = Position(new_x, new_y)
 
     def draw(self, surface, eyes=False):
         dis = self.w // self.rows
@@ -70,16 +73,7 @@ class Snake:
                 if i == len(self.body) - 1:
                     self.turns.pop(p)
             else:
-                if c.direction.x == -1 and c.pos.x <= 0:
-                    c.pos = Position(c.rows - 1, c.pos.y)
-                elif c.direction.x == 1 and c.pos.x >= c.rows - 1:
-                    c.pos = Position(0, c.pos[1])
-                elif c.direction.y == 1 and c.pos.y >= c.rows - 1:
-                    c.pos = Position(c.pos[0], 0)
-                elif c.direction.y == -1 and c.pos.y <= 0:
-                    c.pos = Position(c.pos.x, c.rows - 1)
-                else:
-                    c.move(c.direction)
+                c.move(c.direction)
         return True
 
     def reset(self, pos):
