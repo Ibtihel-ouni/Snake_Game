@@ -89,6 +89,9 @@ class Snake:
     def score(self):
         return len(self.body)
 
+    def eats_snack(self, snack):
+        return self.body[0].pos == snack.pos
+
 
 class SnakeGame:
     CONTROLS = {
@@ -123,7 +126,7 @@ class SnakeGame:
         self.draw_grid()
         pygame.display.update()
 
-    def random_snack(self):
+    def spawn_new_snack(self):
         x = random.randrange(self.grid_lines)
         y = random.randrange(self.grid_lines)
         while (x, y) in [z.pos for z in self.snake.body]:
@@ -140,7 +143,7 @@ class SnakeGame:
         root.destroy()
 
     def run(self):
-        self.random_snack()
+        self.spawn_new_snack()
         game_running = True
 
         clock = pygame.time.Clock()
@@ -150,9 +153,9 @@ class SnakeGame:
             clock.tick(10)
             game_running = self.process_events()
             self.snake.move()
-            if self.snake.body[0].pos == self.snack.pos:
+            if self.snake.eats_snack(self.snack):
                 self.snake.add_cube()
-                self.random_snack()
+                self.spawn_new_snack()
 
             if self.snake.has_collision():
                 message = f'Score: {self.snake.score}\nPress OK to play again.'
