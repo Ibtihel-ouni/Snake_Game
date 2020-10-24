@@ -1,6 +1,6 @@
 import collections
 import random
-import tkinter as tk
+import tkinter
 from tkinter import messagebox
 
 import pygame
@@ -138,7 +138,7 @@ class SnakeGame:
 
     @staticmethod
     def message_box(subject, content):
-        root = tk.Tk()
+        root = tkinter.Tk()
         root.attributes("-topmost", True)
         root.withdraw()
         messagebox.showinfo(subject, content)
