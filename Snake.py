@@ -94,6 +94,7 @@ class Snake:
 
 
 class SnakeGame:
+    FPS = 10
     CONTROLS = {
         pygame.K_LEFT: Direction(-1, 0),
         pygame.K_RIGHT: Direction(1, 0),
@@ -150,7 +151,7 @@ class SnakeGame:
 
         while game_running:
             pygame.time.delay(50)
-            clock.tick(10)
+            clock.tick(self.FPS)
             game_running = self.process_events()
             self.snake.move()
             if self.snake.eats_snack(self.snack):
@@ -158,11 +159,14 @@ class SnakeGame:
                 self.spawn_new_snack()
 
             if self.snake.has_collision():
-                message = f'Score: {self.snake.score}\nPress OK to play again.'
-                self.message_box('You Lost!', message)
-                self.snake.reset((self.grid_lines // 2, self.grid_lines // 2))
+                self.show_score_and_reset()
             self.redraw_window()
         pygame.quit()
+
+    def show_score_and_reset(self):
+        message = f'Score: {self.snake.score}\nPress OK to play again.'
+        self.message_box('You Lost!', message)
+        self.snake.reset((self.grid_lines // 2, self.grid_lines // 2))
 
     def process_events(self):
         for event in pygame.event.get():
