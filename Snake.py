@@ -49,21 +49,7 @@ class Snake:
         self.direction = Direction(0, 1)
 
     def move(self):
-        for event in pygame.event.get():
-            keys = pygame.key.get_pressed()
-            if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
-                return False
-
-            directions = {
-                pygame.K_LEFT: Direction(-1, 0),
-                pygame.K_RIGHT: Direction(1, 0),
-                pygame.K_UP: Direction(0, -1),
-                pygame.K_DOWN: Direction(0, 1),
-            }
-            for key in directions.keys():
-                if keys[key]:
-                    self.turns[self.head.pos[:]] = directions[key]
-
+        self.turns[self.head.pos[:]] = self.direction
         for i, c in enumerate(self.body):
             p = c.pos[:]
             if p in self.turns:
@@ -99,6 +85,13 @@ class Snake:
 
 
 class SnakeGame:
+    CONTROLS = {
+        pygame.K_LEFT: Direction(-1, 0),
+        pygame.K_RIGHT: Direction(1, 0),
+        pygame.K_UP: Direction(0, -1),
+        pygame.K_DOWN: Direction(0, 1),
+    }
+
     def __init__(self, window_size, grid_lines):
         self.window_size = window_size
         self.grid_lines = grid_lines
@@ -151,7 +144,8 @@ class SnakeGame:
         while game_running:
             pygame.time.delay(50)
             clock.tick(10)
-            game_running = self.snake.move()
+            game_running = self.process_events()
+            self.snake.move()
             if self.snake.body[0].pos == self.snack.pos:
                 self.snake.add_cube()
                 self.random_snack()
@@ -163,6 +157,16 @@ class SnakeGame:
                 break
             self.redraw_window()
         pygame.quit()
+
+    def process_events(self):
+        for event in pygame.event.get():
+            keys = pygame.key.get_pressed()
+            if event.type == pygame.QUIT or keys[pygame.K_ESCAPE] or (
+                    event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                return False
+            elif event.type == pygame.KEYDOWN and event.key in self.CONTROLS.keys():
+                self.snake.direction = self.CONTROLS.get(event.key, self.snake.direction)
+        return True
 
 
 if __name__ == '__main__':
