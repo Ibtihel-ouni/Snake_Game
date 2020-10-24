@@ -56,7 +56,7 @@ class Snake:
             p = c.pos[:]
             if p in self.turns:
                 turn = self.turns[p]
-                c.move(Direction(turn[0], turn[1]))
+                c.move(turn)
                 if i == len(self.body) - 1:
                     self.turns.pop(p)
             else:
