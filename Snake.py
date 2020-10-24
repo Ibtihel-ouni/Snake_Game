@@ -10,8 +10,8 @@ Position = collections.namedtuple('Position', ['x', 'y'])
 
 
 class Cube:
-    rows = 20
-    w = 500
+    grid_lines = 20
+    window_size = 500
 
     def __init__(self, start, color=pygame.color.THECOLORS['red']):
         self.pos = Position(*start)
@@ -20,13 +20,13 @@ class Cube:
 
     def move(self, direction):
         self.direction = direction
-        new_x = (self.pos.x + direction.x) % self.rows
-        new_y = (self.pos.y + direction.y) % self.rows
+        new_x = (self.pos.x + direction.x) % self.grid_lines
+        new_y = (self.pos.y + direction.y) % self.grid_lines
 
         self.pos = Position(new_x, new_y)
 
     def draw(self, surface, eyes=False):
-        dis = self.w // self.rows
+        dis = self.window_size // self.grid_lines
         x, y = self.pos
 
         pygame.draw.rect(surface, self.color, (x * dis + 1, y * dis + 1, dis - 2, dis - 2))
@@ -97,8 +97,8 @@ class SnakeGame:
     def __init__(self, window_size, grid_lines):
         self.window_size = window_size
         self.grid_lines = grid_lines
-        Cube.w = window_size
-        Cube.rows = grid_lines
+        Cube.window_size = window_size
+        Cube.grid_lines = grid_lines
         self.square_size = window_size // grid_lines
         self.surface = pygame.display.set_mode((self.window_size, self.window_size))
         self.snake = Snake(Position(grid_lines // 2, grid_lines // 2))
