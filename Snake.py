@@ -31,12 +31,14 @@ class Cube:
 
         pygame.draw.rect(surface, self.color, (x * dis + 1, y * dis + 1, dis - 2, dis - 2))
         if eyes:
-            centre = dis // 2
-            radius = 3
-            circle_middle = (x * dis + centre - radius, y * dis + 8)
-            circle_middle2 = (x * dis + dis - radius * 2, y * dis + 8)
-            pygame.draw.circle(surface, pygame.color.THECOLORS['black'], circle_middle, radius)
-            pygame.draw.circle(surface, pygame.color.THECOLORS['black'], circle_middle2, radius)
+            centre = (x + 0.5) * dis
+            radius = 6 * dis // 50
+            y_offset = 8 * dis // 50
+
+            left_eye = (centre - 1.5 * radius, y * dis + y_offset)
+            right_eye = (centre + 1.5 * radius, y * dis + y_offset)
+            pygame.draw.circle(surface, pygame.color.THECOLORS['black'], left_eye, radius)
+            pygame.draw.circle(surface, pygame.color.THECOLORS['black'], right_eye, radius)
 
 
 class Snake:
@@ -168,5 +170,5 @@ class SnakeGame:
 
 
 if __name__ == '__main__':
-    game = SnakeGame(window_size=500, grid_lines=10)
+    game = SnakeGame(window_size=1000, grid_lines=10)
     game.run()
