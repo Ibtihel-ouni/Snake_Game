@@ -104,13 +104,11 @@ class SnakeGame:
 
     def draw_grid(self):
         line_color = pygame.color.THECOLORS['white']
-        x = 0
-        y = 0
+        loc = 0
         for _ in range(self.grid_lines):
-            x += self.square_size
-            y += self.square_size
-            pygame.draw.line(self.surface, line_color, (x, 0), (x, self.window_size))
-            pygame.draw.line(self.surface, line_color, (0, y), (self.window_size, y))
+            loc += self.square_size
+            pygame.draw.line(self.surface, line_color, (loc, 0), (loc, self.window_size))
+            pygame.draw.line(self.surface, line_color, (0, loc), (self.window_size, loc))
 
     def redraw_window(self):
         self.surface.fill(pygame.color.THECOLORS['black'])
