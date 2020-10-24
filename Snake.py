@@ -154,7 +154,6 @@ class SnakeGame:
                 print('Score: ', len(self.snake.body))
                 self.message_box('You Lost!', 'Play again...')
                 self.snake.reset((self.grid_lines // 2, self.grid_lines // 2))
-                break
             self.redraw_window()
         pygame.quit()
 
