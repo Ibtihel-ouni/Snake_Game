@@ -74,7 +74,7 @@ class Snake:
         tail = self.body[-1]
         dx, dy = tail.direction
 
-        self.body.append(Cube((tail.pos[0] - dx, tail.pos[1] - dy)))
+        self.body.append(Cube((tail.pos.x - dx, tail.pos.y - dy)))
         self.body[-1].direction = Direction(dx, dy)
 
     def draw(self, surface):
