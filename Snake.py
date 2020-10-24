@@ -92,6 +92,15 @@ class Snake:
     def eats_snack(self, snack):
         return self.body[0].pos == snack.pos
 
+    @staticmethod
+    def is_sharp_turn(direction, new_direction):
+        return [sum(c) for c in zip(direction, new_direction)] == [0, 0]
+
+    def update_direction(self, new_direction):
+        if self.is_sharp_turn(self.direction, new_direction):
+            return
+        self.direction = new_direction
+
 
 class SnakeGame:
     FPS = 8
@@ -173,7 +182,7 @@ class SnakeGame:
                     event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 return False
             elif event.type == pygame.KEYDOWN and event.key in self.CONTROLS.keys():
-                self.snake.direction = self.CONTROLS.get(event.key, self.snake.direction)
+                self.snake.update_direction(self.CONTROLS.get(event.key, self.snake.direction))
         return True
 
 
