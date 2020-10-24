@@ -94,7 +94,7 @@ class Snake:
 
 
 class SnakeGame:
-    FPS = 10
+    FPS = 8
     CONTROLS = {
         pygame.K_LEFT: Direction(-1, 0),
         pygame.K_RIGHT: Direction(1, 0),
@@ -103,6 +103,7 @@ class SnakeGame:
     }
 
     def __init__(self, window_size, grid_lines):
+        self.clock = pygame.time.Clock()
         self.window_size = window_size
         self.grid_lines = grid_lines
         Cube.window_size = window_size
@@ -147,11 +148,8 @@ class SnakeGame:
         self.spawn_new_snack()
         game_running = True
 
-        clock = pygame.time.Clock()
-
         while game_running:
-            pygame.time.delay(50)
-            clock.tick(self.FPS)
+            self.clock.tick(self.FPS)
             game_running = self.process_events()
             self.snake.move()
             if self.snake.eats_snack(self.snack):
