@@ -112,13 +112,14 @@ class SnakeGame:
     }
 
     def __init__(self, window_size, grid_lines):
+        screen_mode = pygame.RESIZABLE | pygame.DOUBLEBUF | pygame.HWSURFACE
+        self.surface = pygame.display.set_mode((window_size, window_size), screen_mode)
         self.clock = pygame.time.Clock()
         self.window_size = window_size
         self.grid_lines = grid_lines
         Cube.window_size = window_size
         Cube.grid_lines = grid_lines
         self.square_size = window_size // grid_lines
-        self.surface = pygame.display.set_mode((self.window_size, self.window_size))
         self.snake = Snake(Position(grid_lines // 2, grid_lines // 2))
         self.snack = Cube((0, 0))
 
@@ -183,9 +184,16 @@ class SnakeGame:
                 return False
             elif event.type == pygame.KEYDOWN and event.key in self.CONTROLS.keys():
                 self.snake.update_direction(self.CONTROLS.get(event.key, self.snake.direction))
+            elif event.type == pygame.VIDEORESIZE:
+                self.change_window_size(min(event.w, event.h))
         return True
+
+    def change_window_size(self, new_size):
+        self.window_size = new_size
+        self.square_size = new_size // self.grid_lines
+        Cube.window_size = self.window_size
 
 
 if __name__ == '__main__':
-    game = SnakeGame(window_size=1000, grid_lines=10)
+    game = SnakeGame(window_size=500, grid_lines=10)
     game.run()
