@@ -85,6 +85,10 @@ class Snake:
         positions = [c.pos for c in self.body]
         return len(set(positions)) != len(positions)
 
+    @property
+    def score(self):
+        return len(self.body)
+
 
 class SnakeGame:
     CONTROLS = {
@@ -151,8 +155,8 @@ class SnakeGame:
                 self.random_snack()
 
             if self.snake.has_collision():
-                print('Score: ', len(self.snake.body))
-                self.message_box('You Lost!', 'Play again...')
+                message = f'Score: {self.snake.score}\nPress OK to play again.'
+                self.message_box('You Lost!', message)
                 self.snake.reset((self.grid_lines // 2, self.grid_lines // 2))
             self.redraw_window()
         pygame.quit()
