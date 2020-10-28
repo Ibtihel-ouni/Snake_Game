@@ -1,86 +1,66 @@
+import collections
 import random
-import tkinter as tk
+import tkinter
 from tkinter import messagebox
 
 import pygame
 
+Direction = collections.namedtuple('Directions', ['x', 'y'])
+Position = collections.namedtuple('Position', ['x', 'y'])
+
 
 class Cube:
-    rows = 20
-    w = 500
+    grid_lines = 20
+    window_size = 500
 
-    def __init__(self, start, dirnx=1, dirny=0, color=pygame.color.THECOLORS['red']):
-        self.pos = start
-        self.dirnx = dirnx
-        self.dirny = dirny
+    def __init__(self, start, color=pygame.color.THECOLORS['red']):
+        self.pos = Position(*start)
+        self.direction = Direction(0, 0)
         self.color = color
 
-    def move(self, dirnx, dirny):
-        self.dirnx = dirnx
-        self.dirny = dirny
-        self.pos = (self.pos[0] + self.dirnx, self.pos[1] + self.dirny)
+    def move(self, direction):
+        self.direction = direction
+        new_x = (self.pos.x + direction.x) % self.grid_lines
+        new_y = (self.pos.y + direction.y) % self.grid_lines
+
+        self.pos = Position(new_x, new_y)
 
     def draw(self, surface, eyes=False):
-        dis = self.w // self.rows
-        i = self.pos[0]
-        j = self.pos[1]
+        dis = self.window_size // self.grid_lines
+        x, y = self.pos
 
-        pygame.draw.rect(surface, self.color, (i * dis + 1, j * dis + 1, dis - 2, dis - 2))
+        pygame.draw.rect(surface, self.color, (x * dis + 1, y * dis + 1, dis - 2, dis - 2))
         if eyes:
-            centre = dis // 2
-            radius = 3
-            circle_middle = (i * dis + centre - radius, j * dis + 8)
-            circle_middle2 = (i * dis + dis - radius * 2, j * dis + 8)
-            pygame.draw.circle(surface, pygame.color.THECOLORS['black'], circle_middle, radius)
-            pygame.draw.circle(surface, pygame.color.THECOLORS['black'], circle_middle2, radius)
+            centre = (x + 0.5) * dis
+            radius = 6 * dis // 50
+            y_offset = 8 * dis // 50
+
+            left_eye = (centre - 1.5 * radius, y * dis + y_offset)
+            right_eye = (centre + 1.5 * radius, y * dis + y_offset)
+            pygame.draw.circle(surface, pygame.color.THECOLORS['black'], left_eye, radius)
+            pygame.draw.circle(surface, pygame.color.THECOLORS['black'], right_eye, radius)
 
 
 class Snake:
     body = []
     turns = {}
 
-    def __init__(self, color, pos):
-        self.color = color
+    def __init__(self, pos):
         self.head = Cube(pos)
         self.body.append(self.head)
-        self.dirnx = 0
-        self.dirny = 1
+        self.direction = Direction(0, 1)
 
     def move(self):
-        for event in pygame.event.get():
-            keys = pygame.key.get_pressed()
-            if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
-                return False
-
-            directions = {
-                pygame.K_LEFT: (-1, 0),
-                pygame.K_RIGHT: (1, 0),
-                pygame.K_UP: (0, -1),
-                pygame.K_DOWN: (0, 1),
-            }
-            for key in directions.keys():
-                if keys[key]:
-                    self.dirnx, self.dirny = directions[key]
-                    self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
-
+        self.turns[self.head.pos[:]] = self.direction
         for i, c in enumerate(self.body):
             p = c.pos[:]
             if p in self.turns:
                 turn = self.turns[p]
-                c.move(turn[0], turn[1])
+                c.move(turn)
                 if i == len(self.body) - 1:
                     self.turns.pop(p)
             else:
-                if c.dirnx == -1 and c.pos[0] <= 0:
-                    c.pos = (c.rows - 1, c.pos[1])
-                elif c.dirnx == 1 and c.pos[0] >= c.rows - 1:
-                    c.pos = (0, c.pos[1])
-                elif c.dirny == 1 and c.pos[1] >= c.rows - 1:
-                    c.pos = (c.pos[0], 0)
-                elif c.dirny == -1 and c.pos[1] <= 0:
-                    c.pos = (c.pos[0], c.rows - 1)
-                else:
-                    c.move(c.dirnx, c.dirny)
+                c.move(c.direction)
         return True
 
     def reset(self, pos):
@@ -88,91 +68,132 @@ class Snake:
         self.body = []
         self.body.append(self.head)
         self.turns = {}
-        self.dirnx = 0
-        self.dirny = 1
+        self.direction = Direction(0, 1)
 
     def add_cube(self):
         tail = self.body[-1]
-        dx, dy = tail.dirnx, tail.dirny
+        dx, dy = tail.direction
 
-        self.body.append(Cube((tail.pos[0] - dx, tail.pos[1] - dy)))
-        self.body[-1].dirnx = dx
-        self.body[-1].dirny = dy
+        self.body.append(Cube((tail.pos.x - dx, tail.pos.y - dy)))
+        self.body[-1].direction = Direction(dx, dy)
 
     def draw(self, surface):
         for i, c in enumerate(self.body):
             c.draw(surface, eyes=i == 0)
 
+    def has_collision(self):
+        positions = [c.pos for c in self.body]
+        return len(set(positions)) != len(positions)
 
-def draw_grid(width, rows, surface):
-    square_size = width // rows
-    line_color = pygame.color.THECOLORS['white']
-    x = 0
-    y = 0
-    for _ in range(rows):
-        x += square_size
-        y += square_size
-        pygame.draw.line(surface, line_color, (x, 0), (x, width))
-        pygame.draw.line(surface, line_color, (0, y), (width, y))
+    @property
+    def score(self):
+        return len(self.body)
 
+    def eats_snack(self, snack):
+        return self.body[0].pos == snack.pos
 
-def redraw_window(surface):
-    global rows, width, s, snack
-    surface.fill((0, 0, 0))
-    s.draw(surface)
-    snack.draw(surface)
-    draw_grid(width, rows, surface)
-    pygame.display.update()
+    @staticmethod
+    def is_sharp_turn(direction, new_direction):
+        return [sum(c) for c in zip(direction, new_direction)] == [0, 0]
 
-
-def random_snack(rows, item):
-    positions = item.body
-    x = random.randrange(rows)
-    y = random.randrange(rows)
-
-    while (x, y) in [z.pos for z in positions]:
-        x = random.randrange(rows)
-        y = random.randrange(rows)
-    return x, y
+    def update_direction(self, new_direction):
+        if self.is_sharp_turn(self.direction, new_direction):
+            return
+        self.direction = new_direction
 
 
-def message_box(subject, content):
-    root = tk.Tk()
-    root.attributes("-topmost", True)
-    root.withdraw()
-    messagebox.showinfo(subject, content)
-    root.destroy()
+class SnakeGame:
+    FPS = 8
+    CONTROLS = {
+        pygame.K_LEFT: Direction(-1, 0),
+        pygame.K_RIGHT: Direction(1, 0),
+        pygame.K_UP: Direction(0, -1),
+        pygame.K_DOWN: Direction(0, 1),
+    }
 
+    def __init__(self, window_size, grid_lines):
+        screen_mode = pygame.RESIZABLE | pygame.DOUBLEBUF | pygame.HWSURFACE
+        self.surface = pygame.display.set_mode((window_size, window_size), screen_mode)
+        self.clock = pygame.time.Clock()
+        self.window_size = window_size
+        self.grid_lines = grid_lines
+        Cube.window_size = window_size
+        Cube.grid_lines = grid_lines
+        self.square_size = window_size // grid_lines
+        self.snake = Snake(Position(grid_lines // 2, grid_lines // 2))
+        self.snack = Cube((0, 0))
 
-def main():
-    global width, rows, s, snack
-    width = 500
-    rows = 20
-    win = pygame.display.set_mode((width, width))
-    s = Snake(pygame.color.THECOLORS['red'], (10, 10))
-    snack = Cube(random_snack(rows, s), color=pygame.color.THECOLORS['green'])
-    game_running = True
+    def draw_grid(self):
+        line_color = pygame.color.THECOLORS['white']
+        loc = 0
+        for _ in range(self.grid_lines):
+            loc += self.square_size
+            pygame.draw.line(self.surface, line_color, (loc, 0), (loc, self.window_size))
+            pygame.draw.line(self.surface, line_color, (0, loc), (self.window_size, loc))
 
-    clock = pygame.time.Clock()
+    def redraw_window(self):
+        self.surface.fill(pygame.color.THECOLORS['black'])
+        self.snake.draw(self.surface)
+        self.snack.draw(self.surface)
+        self.draw_grid()
+        pygame.display.update()
 
-    while game_running:
-        pygame.time.delay(50)
-        clock.tick(10)
-        game_running = s.move()
-        if s.body[0].pos == snack.pos:
-            s.add_cube()
-            snack = Cube(random_snack(rows, s), color=pygame.color.THECOLORS['green'])
+    def spawn_new_snack(self):
+        x = random.randrange(self.grid_lines)
+        y = random.randrange(self.grid_lines)
+        while (x, y) in [z.pos for z in self.snake.body]:
+            x = random.randrange(self.grid_lines)
+            y = random.randrange(self.grid_lines)
+        self.snack = Cube((x, y), color=pygame.color.THECOLORS['green'])
 
-        for x in range(len(s.body)):
-            if s.body[x].pos in list(map(lambda z: z.pos, s.body[x + 1:])):
-                print('Score: ', len(s.body))
-                message_box('You Lost!', 'Play again...')
-                s.reset((rows // 2, rows // 2))
-                break
+    @staticmethod
+    def message_box(subject, content):
+        root = tkinter.Tk()
+        root.attributes("-topmost", True)
+        root.withdraw()
+        messagebox.showinfo(subject, content)
+        root.destroy()
 
-        redraw_window(win)
-    pygame.quit()
+    def run(self):
+        self.spawn_new_snack()
+        game_running = True
+
+        while game_running:
+            self.clock.tick(self.FPS)
+            game_running = self.process_events()
+            self.snake.move()
+            if self.snake.eats_snack(self.snack):
+                self.snake.add_cube()
+                self.spawn_new_snack()
+
+            if self.snake.has_collision():
+                self.show_score_and_reset()
+            self.redraw_window()
+        pygame.quit()
+
+    def show_score_and_reset(self):
+        message = f'Score: {self.snake.score}\nPress OK to play again.'
+        self.message_box('You Lost!', message)
+        self.snake.reset((self.grid_lines // 2, self.grid_lines // 2))
+
+    def process_events(self):
+        for event in pygame.event.get():
+            keys = pygame.key.get_pressed()
+            if event.type == pygame.QUIT or keys[pygame.K_ESCAPE] or (
+                    event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                return False
+            elif event.type == pygame.KEYDOWN and event.key in self.CONTROLS.keys():
+                self.snake.update_direction(self.CONTROLS.get(event.key, self.snake.direction))
+            elif event.type == pygame.VIDEORESIZE:
+                self.change_window_size(min(event.w, event.h))
+        return True
+
+    def change_window_size(self, new_size):
+        self.window_size = new_size
+        self.square_size = new_size // self.grid_lines
+        Cube.window_size = self.window_size
 
 
 if __name__ == '__main__':
-    main()
+    game = SnakeGame(window_size=500, grid_lines=10)
+    game.run()
